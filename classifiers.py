@@ -1,6 +1,6 @@
 #!/usr/bin/python
-# Usage: %run ./test.py - For running on IPYTHON
-# ./test.py -<parameter>
+# Usage: %run ./classifiers.py - For running on IPYTHON
+# python classifers.py -<parameter>
 # Parameters:
 #			-b : Bernoulli Naives Bayes
 #			-g : Gaussian Naives Bayes
@@ -12,6 +12,16 @@
 # Author: Peter Vuong
 # Date: 08/02/2016
 # Last Modified: 29/02/2016
+
+import numpy as np
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import GaussianNB
+from sklearn.svm import LinearSVC
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+import sys
 
 ###############################################################################################
 #                                 READ IN TRAINING/TEST DATA                                  #
@@ -56,7 +66,6 @@ numCategories = len(categories)
 ###############################################################################################
 
 # Tokenizing text with scikit-learn
-from sklearn.feature_extraction.text import CountVectorizer
 count_vect = CountVectorizer(analyzer = 'word', 
                              tokenizer = None, 
 							 preprocessor = None, 
@@ -78,16 +87,16 @@ test_data_features = test_data_features.toarray()
 
 # Calculate the accuracy of the predictor.
 def checkAccuracy(list1, list2):
-	correct = 0;
-	incorrect = 0;
+	correct = 0
+	incorrect = 0
 	for i in range(len(list1)):
 		#print("List1: " + list1[i].strip())
 		#print("List2: " + list2[i].strip())
 		
 		if (list1[i].strip() == list2[i].strip()):
-			correct += 1;
+			correct += 1
 		else:
-			incorrect += 1;
+			incorrect += 1
 	
 	total = correct + incorrect
 	
@@ -101,7 +110,6 @@ def printVocabulary(trainFeatures, countVect):
 	# Words in vocabulary.
 	vocab = countVect.get_feature_names()
 
-	import numpy as np
 	dist = np.sum(trainFeatures, axis=0)
 	for tag, count in zip(vocab, dist):
 		print(count, tag)
@@ -109,20 +117,19 @@ def printVocabulary(trainFeatures, countVect):
 # Count number of words of an item in given list.
 def wordCount(list):
 	for item in list:
-		count = len(list.split())
+		count = len(item.split())
+
 	return count
 
 ###############################################################################################	
 #                                   CLASSIFIERS	                                              #
 ###############################################################################################
 
-#
 # Bernoulli Naives Bayes classifier.
 # Fit the classifer to the training set using bag of words
 # as features and categories as response variable.
 # Returns: accuracy of the predictor.	
 def bernoulliNB(trainFeatures, testFeatures, responseVariable, testResult):
-	from sklearn.naive_bayes import BernoulliNB
 	bernoulli = BernoulliNB()
 	bernoulli.fit(trainFeatures, responseVariable)
 	BernoulliNB(alpha=1.0, binarize=0.0, class_prior=None, fit_prior=True)
@@ -132,28 +139,25 @@ def bernoulliNB(trainFeatures, testFeatures, responseVariable, testResult):
 	
 	checkAccuracy(testResult, result)	
 	
-#
+
 # Gaussian Naives Bayes classifier.
 # Fit the classifer to the training set using bag of words
 # as features and categories as response variable.
 # Returns: accuracy of the predictor.	
 def gaussianNB(trainFeatures, testFeatures, responseVariable, testResult):
-	from sklearn.naive_bayes import GaussianNB
 	gaussian = GaussianNB()
 	gaussian.fit(trainFeatures, responseVariable)
 	
 	# Use Gaussian Naives Bayes to make prediction.
 	result = gaussian.predict(testFeatures)
-	
 	checkAccuracy(testResult, result)		
 	
-#
+
 # Linear Support Vector Classifier - Support Vector Machine.
 # Fit the LinearSVC to the training set using bag of words
 # as features and categories as response variable.
 # Returns: accuracy of the predictor.
 def linearSVC(trainFeatures, testFeatures, responseVariable, testResult):
-	from sklearn.svm import LinearSVC
 	svc = LinearSVC()
 	svc = svc.fit(trainFeatures, responseVariable)
 	LinearSVC(C=1.0, class_weight=None, dual=True, fit_intercept=True,
@@ -163,33 +167,29 @@ def linearSVC(trainFeatures, testFeatures, responseVariable, testResult):
 	
 	# Use Linear Support Vector Classifer to make prediction.
 	result = svc.predict(testFeatures)
-
 	checkAccuracy(testResult, result)
 	
-#
+
 # Multinomial Naives Bayes classifier.
 # Fit the classifer to the training set using bag of words
 # as features and categories as response variable.
 # Returns: accuracy of the predictor.	
 def multinomialNB(trainFeatures, testFeatures, responseVariable, testResult):
-	from sklearn.naive_bayes import MultinomialNB
 	multinomial = MultinomialNB()
 	multinomial.fit(trainFeatures, responseVariable)
 	MultinomialNB(alpha=1.0, class_prior=None, fit_prior=True)
 	
 	# Use Multinomial Naives Bayes to make prediction.
 	result = multinomial.predict(testFeatures)
+	checkAccuracy(testResult, result)
+	multinomial.score(testResult, result, sample_weight=None)
 	
-	#checkAccuracy(testResult, result)
-	multinomial.score(testRestul, result, sample_weight=None)
-	
-#
+
 # Random Forest classifer with n trees.
 # Fit the forest to the training set using bag of words
 # as features and categories as response variable.
 # Returns: accuracy of the predictor.
 def randomForest(trainFeatures, testFeatures, responseVariable, nTrees, testResult):
-	from sklearn.ensemble import RandomForestClassifier
 	forest = RandomForestClassifier(n_estimators = nTrees)
 	forest = forest.fit(trainFeatures, responseVariable)
 
@@ -197,16 +197,14 @@ def randomForest(trainFeatures, testFeatures, responseVariable, nTrees, testResu
 	result = forest.predict(testFeatures)
 	
 	print(str(nTrees) + " trees\n")
-
 	checkAccuracy(testResult, result)
 	
-#
+
 # Support Vector Classifer - RBF Kernel Support Vector Machine.
 # Fit the SVC to the training set using bag of words
 # as features and categories as response variable.
 # Returns: accuracy of the predictor.
 def svcRBF(trainFeatures, testFeatures, responseVariable, testResult):
-	from sklearn.svm import SVC
 	svc = SVC()
 	svc = svc.fit(trainFeatures, responseVariable)
 	SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0,
@@ -216,12 +214,9 @@ def svcRBF(trainFeatures, testFeatures, responseVariable, testResult):
 	
 	# Use Support Vector Classifer to make prediction.
 	result = svc.predict(testFeatures)
-
 	checkAccuracy(testResult, result)
 	
 ###############################################################################################
-
-import sys
 
 if sys.argv[1] == "-b":
 	print("Predictor: Bernoulli Naive Bayes")
